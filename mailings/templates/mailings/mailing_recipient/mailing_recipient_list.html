@@ -1,0 +1,18 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Список получателей{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Список получателей</h1>
+<ol class="list-group list-group-numbered">
+  {% for mailing_recipient in mailing_recipients%}
+  <li class="list-group-item">
+          <a href="{% url 'mailings:mailing_recipient_detail' mailing_recipient.pk %}">{{ mailing_recipient.email }}</a>
+          <a href="{% url 'mailings:mailing_recipient_update' mailing_recipient.pk %}" class="btn btn-secondary">Изменить</a>
+          <a href="{% url 'mailings:mailing_recipient_delete' mailing_recipient.pk %}" class="btn btn-danger">Удалить</a>
+  </li>
+  {% endfor%}
+</ol>
+</div>
+{% endblock %}
