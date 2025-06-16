@@ -1,0 +1,18 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Рассылки{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Все рассылки</h1>
+<ol class="list-group list-group-numbered">
+  {% for mailing in mailings%}
+  <li class="list-group-item">
+          <a href="{% url 'mailings:mailing_detail' mailing.pk %}">{{ mailing.pk }} - {{ mailing.status}}</a>
+          <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
+          <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+  </li>
+  {% endfor%}
+</ol>
+</div>
+{% endblock %}

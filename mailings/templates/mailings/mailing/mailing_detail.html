@@ -1,0 +1,18 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Рассылка{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Рассылка</h1>
+  <li class="list-group-item">{{ mailing.status }}</li>
+  <li class="list-group-item">{{ mailing.message }}</li>
+  <li class="list-group-item">{{ mailing.recipients.all }}</li>
+  <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
+  <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+  <form method="post" action="{% url 'mailings:send_mailing' mailing.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Отправить рассылку</button>
+  </form>
+</div>
+{% endblock %}
