@@ -5,9 +5,16 @@
 {% block content %}
 <div class="container mt-5">
   <h1>Рассылка</h1>
-  <li class="list-group-item">{{ mailing.status }}</li>
-  <li class="list-group-item">{{ mailing.message }}</li>
-  <li class="list-group-item">{{ mailing.recipients.all }}</li>
+  <p><strong>Статус: </strong>{{ mailing.get_status_display }}</p>
+  <p><strong>Тема рассылки: </strong>{{ mailing.message }}</p>
+  <p><strong>Клиенты:</strong></p>
+  <ul>
+    {% for recipients in mailing.recipients.all %}
+        <li>{{ recipients.fio }} ({{ recipients.email }})</li>
+    {% empty %}
+        <li>Нет клиентов.</li>
+    {% endfor %}
+</ul>
   <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
   <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
   <form method="post" action="{% url 'mailings:send_mailing' mailing.id %}">

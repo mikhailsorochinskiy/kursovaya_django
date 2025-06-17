@@ -5,6 +5,7 @@
 {% block content %}
 <div class="container mt-5">
   <h1>Список получателей</h1>
+    <a href="{% url 'mailings:mailing_recipient_create' %}" class="btn btn-primary">Создать получателя</a>
 <ol class="list-group list-group-numbered">
   {% for mailing_recipient in mailing_recipients%}
   <li class="list-group-item">

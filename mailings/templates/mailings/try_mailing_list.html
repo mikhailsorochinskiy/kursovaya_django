@@ -1,0 +1,17 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Попытки рассылок{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Все попытки рассылки</h1>
+<ol class="list-group list-group-numbered">
+  {% for try_mailing in try_mailings%}
+  <li class="list-group-item">
+          <p>{{ try_mailing.mailing.message.message_topic }}, {{ try_mailing.date}} - {{try_mailing.status}}</p>
+
+  </li>
+  {% endfor%}
+</ol>
+</div>
+{% endblock %}
