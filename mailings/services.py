@@ -19,6 +19,8 @@ def validate_mailing_time(mailing):
         raise ValidationError("Рассылка еще не началась")
 
     if mailing.date_end and now > mailing.date_end:
+        mailing.status = "stopped"
+        mailing.save()
         raise ValidationError("Рассылка уже завершена")
 
     if mailing.status != "started":
@@ -41,6 +43,7 @@ def send_mailing(mailing_id):
                   message=message.message_text,
                   from_email=EMAIL_HOST_USER,
                   recipient_list=[recipient.email for recipient in recipients],
+                  fail_silently=False,
                   )
         if mailing.date_end and timezone.now() > mailing.date_end:
             mailing.status = "stopped"

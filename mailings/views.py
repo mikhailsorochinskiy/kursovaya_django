@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 from django.core.mail import send_mail
 from config.settings import EMAIL_HOST_USER
 from .services import send_mailing
+from .forms import MailingRecipientForm, MessageForm, MailingForm
 
 
 # Контроллеры для получателей
@@ -18,7 +19,7 @@ class ListMailingRecipient(ListView):
 
 class CreateMailingRecipient(CreateView):
     model = MailingRecipient
-    fields = ('email', 'fio', 'comment')
+    form_class = MailingRecipientForm
     template_name = 'mailings/mailing_recipient/mailing_recipient_form.html'
     success_url = reverse_lazy('mailings:mailing_recipients_list')
 
@@ -31,7 +32,7 @@ class DetailMailingRecipient(DetailView):
 
 class UpdateMailingRecipient(UpdateView):
     model = MailingRecipient
-    fields = ('email', 'fio', 'comment')
+    form_class = MailingRecipientForm
     template_name = 'mailings/mailing_recipient/mailing_recipient_form.html'
     success_url = reverse_lazy('mailings:mailing_recipients_list')
 
@@ -52,7 +53,7 @@ class ListMessage(ListView):
 
 class CreateMessage(CreateView):
     model = Message
-    fields = ('message_topic', 'message_text')
+    form_class = MessageForm
     template_name = 'mailings/message/message_form.html'
     success_url = reverse_lazy('mailings:messages_list')
 
@@ -65,7 +66,7 @@ class DetailMessage(DetailView):
 
 class UpdateMessage(UpdateView):
     model = Message
-    fields = ('message_topic', 'message_text')
+    form_class = MessageForm
     template_name = 'mailings/message/message_form.html'
     success_url = reverse_lazy('mailings:messages_list')
 
@@ -86,7 +87,7 @@ class ListMailing(ListView):
 
 class CreateMailing(CreateView):
     model = Mailing
-    fields = ('name', 'message', 'recipients', 'date_start', 'date_end')
+    form_class = MailingForm
     template_name = 'mailings/mailing/mailing_form.html'
     success_url = reverse_lazy('mailings:mailings_list')
 
@@ -99,7 +100,7 @@ class DetailMailing(DetailView):
 
 class UpdateMailing(UpdateView):
     model = Mailing
-    fields = ('status', 'message', 'recipients')
+    form_class = MailingForm
     template_name = 'mailings/mailing/mailing_form.html'
     success_url = reverse_lazy('mailings:mailings_list')
 
