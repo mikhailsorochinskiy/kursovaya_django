@@ -1,6 +1,6 @@
 from django import forms
 from .models import User
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 
 
 class UserRegisterForm(UserCreationForm):
@@ -9,7 +9,20 @@ class UserRegisterForm(UserCreationForm):
         fields = ('email', 'phone_number', 'avatar', 'country', 'password1', 'password2')
 
 
+class UserPwdResetConfirmForm(PasswordChangeForm):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
+        # Удаляем поле старого пароля (оставляем только new_password1 и new_password2)
+        del self.fields['old_password']
+    class Meta:
+        fields = ('new_password1', 'new_password2')
+
+
 class LoginForm(AuthenticationForm):
     "Форма входа с email"
 
     username = forms.EmailField(label="Email")
+
+
+class PwdResetForm(forms.Form):
+    email = forms.EmailField(help_text='Введите почту, на которую будет отправлено письмо с подтверждением о смене пароля')

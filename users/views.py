@@ -1,12 +1,13 @@
+from django.http import HttpResponse
 from django.conf import settings
 from django.contrib import messages
-from django.views.generic import CreateView, FormView, TemplateView
-from .forms import UserRegisterForm, LoginForm
+from django.views.generic import CreateView, FormView, TemplateView, UpdateView
+from .forms import UserRegisterForm, LoginForm, PwdResetForm, UserPwdResetConfirmForm
 from .models import User
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.core.mail import send_mail
 from django.contrib.auth import views as auth_views, update_session_auth_hash, login, authenticate
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, redirect, render, Http404
 
 
 # Create your views here.
@@ -73,3 +74,66 @@ class VerifyEmailView(TemplateView):
         except User.DoesNotExist:
             messages.error(request, "Недействительная ссылка подтверждения.")
             return redirect("users:register")
+
+
+class PwdResetView(FormView):
+    form_class = PwdResetForm
+    template_name = 'users/pwd_reset_form.html'
+    success_url = reverse_lazy('users:pwd_reset_done')  # Используйте имя URL без параметров
+
+    def form_valid(self, form):
+        email = form.cleaned_data['email']
+        # Сохраните email в сессии, если нужно использовать его в PwdResetDone
+        self.request.session['reset_email'] = email
+
+        user = User.objects.get(email=email)
+        token = user.generate_verification_token()
+        user.is_active = False
+        user.save()
+
+        verification_link = f"http://{settings.DOMAIN}/users/password_reset/confirm/{token}/"
+        send_mail(
+            "Смена пароля",
+            f"Перейдите по ссылке для смены пароля: {verification_link}",
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[user.email],
+            fail_silently=False,
+        )
+        return super().form_valid(form)
+
+
+class PwdResetDone(TemplateView):
+    template_name = 'users/pwd_reset_done.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['email'] = self.request.session.get('reset_email', '')
+        return context
+
+
+class PwdResetConfirmView(FormView):
+    form_class = UserPwdResetConfirmForm
+    template_name = "users/pwd_reset_confirm.html"
+    success_url = reverse_lazy('users:login')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user = self.get_user_by_token()
+        kwargs['user'] = user  # Передаем пользователя в форму
+        return kwargs
+
+    def get_user_by_token(self):
+        token = self.kwargs.get('token')
+        try:
+            user = User.objects.get(verification_token=token)
+            return user
+        except User.DoesNotExist:
+            raise Http404("Недействительная ссылка для сброса пароля")
+
+    def form_valid(self, form):
+        user = form.save()  # Сохраняем новый пароль
+        user.is_active = True  # Активируем аккаунт (если нужно)
+        user.verification_token = ""  # Очищаем токен
+        user.save()
+        messages.success(self.request, "Пароль успешно изменён!")
+        return super().form_valid(form)
