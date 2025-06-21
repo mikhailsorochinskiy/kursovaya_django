@@ -4,9 +4,10 @@ from django.contrib import messages
 from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView, TemplateView
 from .models import MailingRecipient, Message, Mailing, TryMailing
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.mail import send_mail
 from config.settings import EMAIL_HOST_USER
-from .services import send_mailing
+from .services import send_mailing, message_count
 from .forms import MailingRecipientForm, MessageForm, MailingForm
 
 
@@ -22,6 +23,10 @@ class CreateMailingRecipient(CreateView):
     form_class = MailingRecipientForm
     template_name = 'mailings/mailing_recipient/mailing_recipient_form.html'
     success_url = reverse_lazy('mailings:mailing_recipients_list')
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
 class DetailMailingRecipient(DetailView):
@@ -57,6 +62,10 @@ class CreateMessage(CreateView):
     template_name = 'mailings/message/message_form.html'
     success_url = reverse_lazy('mailings:messages_list')
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
 
 class DetailMessage(DetailView):
     model = Message
@@ -91,6 +100,10 @@ class CreateMailing(CreateView):
     template_name = 'mailings/mailing/mailing_form.html'
     success_url = reverse_lazy('mailings:mailings_list')
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
 
 class DetailMailing(DetailView):
     model = Mailing
@@ -112,16 +125,19 @@ class DeleteMailing(DeleteView):
     context_object_name = 'mailing'
 
 
-class HomePage(ListView):
+class HomePage(LoginRequiredMixin, ListView):
     model = Mailing
     template_name = 'mailings/home.html'
     context_object_name = 'mailing'
 
+    def get_queryset(self):
+        return Mailing.objects.filter(owner=self.request.user)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        mailings_started = Mailing.objects.filter(status='started')
+        mailings_started = self.get_queryset().filter(status='started')
         context['mailings_started_count'] = mailings_started.count()
-        mailing_recipients = MailingRecipient.objects.all()
+        mailing_recipients = MailingRecipient.objects.filter(owner=self.request.user)
         context['mailing_recipients_count'] = mailing_recipients.count()
         return context
 
@@ -132,11 +148,32 @@ class ListTryMailing(ListView):
     context_object_name = 'try_mailings'
 
 
+class StatisticView(ListView):
+    model = TryMailing
+    template_name = 'mailings/statistic.html'
+    context_object_name = 'try_mailings'
+
+    def get_queryset(self):
+        return TryMailing.objects.filter(owner=self.request.user)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        successful_try = self.get_queryset().filter(status='successful')
+        no_successful_try = self.get_queryset().filter(status='no_successful')
+        messages_count = message_count(self.get_queryset())
+        context['successful_try'] = successful_try.count()
+        context['no_successful_try'] = no_successful_try.count()
+        context['messages_count'] = messages_count
+        return context
+
+
 def send_mailing_view(request, mailing_id):
     if request.method == "POST":
         mailing = get_object_or_404(Mailing, id=mailing_id)
+        try_mailing = TryMailing.objects.create(mailing=mailing)
+        try_mailing.owner = request.user
         try:
-            send_mailing(mailing_id)
+            send_mailing(mailing_id, try_mailing)
             messages.success(request, f'Рассылка "{mailing.name}" успешно отправлена!')
             return redirect('mailings:mailings_list')
         except Exception as e:

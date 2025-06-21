@@ -8,11 +8,13 @@
     <a href="{% url 'mailings:mailing_recipient_create' %}" class="btn btn-primary">Создать получателя</a>
 <ol class="list-group list-group-numbered">
   {% for mailing_recipient in mailing_recipients%}
+    {% if user == mailing_recipient.owner %}
   <li class="list-group-item">
           <a href="{% url 'mailings:mailing_recipient_detail' mailing_recipient.pk %}">{{ mailing_recipient.email }}</a>
           <a href="{% url 'mailings:mailing_recipient_update' mailing_recipient.pk %}" class="btn btn-secondary">Изменить</a>
           <a href="{% url 'mailings:mailing_recipient_delete' mailing_recipient.pk %}" class="btn btn-danger">Удалить</a>
   </li>
+    {% endif %}
   {% endfor%}
 </ol>
 </div>

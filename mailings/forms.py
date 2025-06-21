@@ -44,7 +44,7 @@ class MessageForm(forms.ModelForm):
 class MailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
-        fields = ['name', 'message', 'recipients', 'date_start', 'date_end']
+        fields = ['name', 'message', 'recipients',]
 
     def __init__(self, *args, **kwargs):
         super(MailingForm, self).__init__(*args, **kwargs)
@@ -61,15 +61,4 @@ class MailingForm(forms.ModelForm):
         self.fields['recipients'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Выберите список получателей рассылки'
-        })
-
-        self.fields['date_start'].widget.attrs.update({
-            'class': 'form-control',
-            'type': 'date',
-
-        })
-
-        self.fields['date_end'].widget.attrs.update({
-            'class': 'form-control',
-            'type': 'date',
         })

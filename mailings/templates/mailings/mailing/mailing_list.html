@@ -8,12 +8,14 @@
     <a href="{% url 'mailings:mailing_create' %}" class="btn btn-primary">Создать рассылку</a>
 <ol class="list-group">
   {% for mailing in mailings%}
+    {% if user == mailing.owner %}
   <li class="list-group-item list-group-numbered">
           <a href="{% url 'mailings:mailing_detail' mailing.pk %}">{{ mailing.name }}</a>
       Статус: {{ mailing.get_status_display}}
           <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
           <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
   </li>
+    {% endif %}
   {% endfor%}
 </ol>
 </div>

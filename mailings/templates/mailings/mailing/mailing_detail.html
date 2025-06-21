@@ -15,6 +15,8 @@
         <li>Нет клиентов.</li>
     {% endfor %}
 </ul>
+  <p><strong>Дата и время начала рассылки: </strong>{{mailing.date_start}}</p>
+  <p><strong>Дата и время начала рассылки: </strong>{{mailing.date_end}}</p>
   <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
   <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
   <form method="post" action="{% url 'mailings:send_mailing' mailing.id %}">

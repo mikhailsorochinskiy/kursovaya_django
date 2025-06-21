@@ -5,8 +5,8 @@
 {% block content %}
 <div class="container mt-5">
   <h1>Получатель {{ mailing_recipient }}</h1>
-  <li class="list-group-item">{{ mailing_recipient.fio }}</li>
-  <li class="list-group-item">{{ mailing_recipient.comment }}</li>
+  <li class="list-group-item">ФИО: {{ mailing_recipient.fio }}</li>
+  <li class="list-group-item">Комментарий: {{ mailing_recipient.comment }}</li>
   <a href="{% url 'mailings:mailing_recipient_update' mailing_recipient.pk %}" class="btn btn-secondary">Изменить</a>
   <a href="{% url 'mailings:mailing_recipient_delete' mailing_recipient.pk %}" class="btn btn-danger">Удалить</a>
 </div>

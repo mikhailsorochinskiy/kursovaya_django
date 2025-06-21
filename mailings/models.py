@@ -1,4 +1,5 @@
 from django.db import models
+from users.models import User
 
 
 # Create your models here.
@@ -6,6 +7,7 @@ class MailingRecipient(models.Model):
     email = models.EmailField(unique=True, verbose_name='Email')
     fio = models.CharField(verbose_name='ФИО', max_length=150, blank=True, null=True)
     comment = models.TextField(verbose_name='Комментарий', blank=True, null=True)
+    owner = models.ForeignKey(User, verbose_name='Владелец', blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.email}'
@@ -18,6 +20,7 @@ class MailingRecipient(models.Model):
 class Message(models.Model):
     message_topic = models.CharField(verbose_name='Тема сообщения', max_length=150, blank=True, null=True)
     message_text = models.TextField(verbose_name='Текст сообщения', blank=True, null=True)
+    owner = models.ForeignKey(User, verbose_name='Владелец', blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.message_topic}'
@@ -41,6 +44,7 @@ class Mailing(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='created')
     message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение', related_name='messages')
     recipients = models.ManyToManyField(MailingRecipient)
+    owner = models.ForeignKey(User, verbose_name='Владелец', blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.message} {self.status}'
@@ -60,6 +64,7 @@ class TryMailing(models.Model):
     status = models.CharField(max_length=15, choices=STATUS_CHOICES, blank=True, null=True)
     ans_from_email_server = models.TextField(verbose_name='Ответ почтового сервера', blank=True, null=True)
     mailing = models.ForeignKey(Mailing, on_delete=models.CASCADE)
+    owner = models.ForeignKey(User, verbose_name='Владелец', blank=True, null=True, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'Попытка рассылки'

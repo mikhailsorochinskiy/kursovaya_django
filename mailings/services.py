@@ -7,36 +7,23 @@ from .models import Mailing, MailingRecipient, TryMailing
 from config.settings import EMAIL_HOST_USER
 
 
-
-def validate_mailing_time(mailing):
+def validate_mailing_status(mailing):
     "Проверка времени у рассылки"
-    now = timezone.now()
 
-    if mailing.status == "stopped":
-        raise ValidationError("Рассылка завершена и ее нельзя повторно запустить")
+    if mailing.status == 'started':
+        raise ValidationError('Рассылка уже запущена')
 
-    if mailing.date_start and now < mailing.date_start:
-        raise ValidationError("Рассылка еще не началась")
-
-    if mailing.date_end and now > mailing.date_end:
-        mailing.status = "stopped"
-        mailing.save()
-        raise ValidationError("Рассылка уже завершена")
-
-    if mailing.status != "started":
-        mailing.status = "started"
-        if not mailing.date_start:
-            mailing.date_start = now
-        mailing.save()
+    mailing.status = "started"
+    mailing.save()
 
 
-def send_mailing(mailing_id):
+def send_mailing(mailing_id, try_mailing):
     """Отправка рассылки"""
     mailing = get_object_or_404(Mailing, id=mailing_id)
-    validate_mailing_time(mailing)
+    validate_mailing_status(mailing)
+    mailing.date_start = timezone.now()
     message = mailing.message
     recipients = mailing.recipients.all()
-    try_mailing = TryMailing.objects.create(mailing=mailing)
 
     try:
         send_mail(subject=message.message_topic,
@@ -45,14 +32,22 @@ def send_mailing(mailing_id):
                   recipient_list=[recipient.email for recipient in recipients],
                   fail_silently=False,
                   )
-        if mailing.date_end and timezone.now() > mailing.date_end:
-            mailing.status = "stopped"
-            mailing.save()
+
         try_mailing.status = 'successful'
         try_mailing.save()
-        # messages.success(request, f'Рассылка "{message.message_topic}" успешно отправлена!')
-        # return redirect('mailings:mailings_list')
+
     except Exception as e:
         try_mailing.status = 'no_successful'
         try_mailing.ans_from_email_server = f'Error sending mailing {mailing.id}: {str(e)}'
         try_mailing.save()
+    finally:
+        mailing.date_end = timezone.now()
+        mailing.status = "stopped"
+        mailing.save()
+
+
+def message_count(try_mailings):
+    count = 0
+    for try_mailing in try_mailings:
+        count += try_mailing.mailing.recipients.count()
+    return count
