@@ -1,0 +1,15 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Изменение профиля</h1>
+  <form method="post" enctype='multipart/form-data'>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Подтвердить</button>
+    <a href="{% url 'users:user_detail' user.pk %}" class="btn btn-secondary">Отмена</a>
+  </form>
+</div>
+{% endblock %}

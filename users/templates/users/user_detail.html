@@ -1,0 +1,13 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Личный кабинет{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Ваш профиль</h1>
+  <li class="list-group-item">{{ user.email }}</li>
+  <li class="list-group-item">{{ user.phone_number }}</li>
+  <li class="list-group-item">{{ user.country }}</li>
+  <a href="{% url 'users:user_update' user.pk %}" class="btn btn-secondary">Изменить профиль</a>
+</div>
+{% endblock %}
