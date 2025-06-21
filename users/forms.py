@@ -1,12 +1,23 @@
 from django import forms
 from .models import User
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm, UserChangeForm
 
 
 class UserRegisterForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'phone_number', 'avatar', 'country', 'password1', 'password2')
+
+
+class UserUpdateForm(UserChangeForm):
+    class Meta:
+        model = User
+        fields = ('phone_number', 'avatar', 'country')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Удаляем поле пароля и связанные с ним поля
+        del self.fields['password']
 
 
 class UserPwdResetConfirmForm(PasswordChangeForm):

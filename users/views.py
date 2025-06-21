@@ -1,8 +1,8 @@
 from django.http import HttpResponse
 from django.conf import settings
 from django.contrib import messages
-from django.views.generic import CreateView, FormView, TemplateView, UpdateView
-from .forms import UserRegisterForm, LoginForm, PwdResetForm, UserPwdResetConfirmForm
+from django.views.generic import CreateView, FormView, TemplateView, UpdateView, DetailView
+from .forms import UserRegisterForm, LoginForm, PwdResetForm, UserPwdResetConfirmForm, UserUpdateForm
 from .models import User
 from django.urls import reverse_lazy, reverse
 from django.core.mail import send_mail
@@ -36,6 +36,23 @@ class UserCreateView(CreateView):
             self.request, "Письмо с подтверждением отправлено на вашу электронную почту"
         )
         return super().form_valid(form)
+
+
+class UserDetailView(DetailView):
+    model = User
+    template_name = 'users/user_detail.html'
+    context_object_name = 'user'
+
+
+
+
+class UserUpdateView(UpdateView):
+    model = User
+    form_class = UserUpdateForm
+    template_name = 'users/user_update.html'
+
+    def get_success_url(self):
+        return reverse('users:user_detail', kwargs={'pk': self.object.pk})
 
 
 class LoginView(FormView):
