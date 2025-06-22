@@ -1,0 +1,16 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Рассылки{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Все пользователи</h1>
+<ol class="list-group">
+  {% for user in users %}
+    <li><a href="{% url 'users:user_detail' user.pk %}">{{user.email}}</a>,
+      статус: {% if user.is_active %}Активный{% else %}Заблокирован{% endif %}</li>
+
+  {% endfor%}
+</ol>
+</div>
+{% endblock %}

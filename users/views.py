@@ -1,17 +1,41 @@
 from django.http import HttpResponse
+from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
-from django.views.generic import CreateView, FormView, TemplateView, UpdateView, DetailView
+from django.views.generic import CreateView, FormView, TemplateView, UpdateView, DetailView, ListView
 from .forms import UserRegisterForm, LoginForm, PwdResetForm, UserPwdResetConfirmForm, UserUpdateForm
 from .models import User
 from django.urls import reverse_lazy, reverse
 from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth import views as auth_views, update_session_auth_hash, login, authenticate
+from django.contrib.auth.models import Permission
 from django.shortcuts import get_object_or_404, redirect, render, Http404
 
 
 # Create your views here.
+class UserListView(ListView):
+    model = User
+    template_name = 'users/users.html'
+    context_object_name = 'users'
+
+    def get_queryset(self):
+        queryset = User.objects.all()
+        if self.request.user.is_superuser:
+            return queryset.exclude(is_superuser=True)
+        if self.request.user.has_perm('mailings.can_view_mailing'):
+            perm = Permission.objects.get(
+                codename='can_view_mailing',
+                content_type__app_label='mailings'
+            )
+            return queryset.exclude(
+                Q(is_superuser=True) |
+                Q(user_permissions=perm) |
+                Q(groups__permissions=perm)
+            ).distinct()
+        raise PermissionDenied
+
+
 class UserCreateView(CreateView):
     model = User
     form_class = UserRegisterForm
@@ -46,6 +70,8 @@ class UserDetailView(DetailView):
 
     def get_object(self, queryset=None):
         user = get_object_or_404(User, pk=self.kwargs["pk"])
+        if self.request.user.has_perm('mailings.can_view_mailing'):
+            return user
         if user != self.request.user:
             raise PermissionDenied("Вы не можете смотреть данные чужого пользователя.")
         return user
@@ -167,3 +193,20 @@ class PwdResetConfirmView(FormView):
         user.save()
         messages.success(self.request, "Пароль успешно изменён!")
         return super().form_valid(form)
+
+
+def activate_deactivate_user(request, user_id):
+    """Контролер активирует деактивированного и деактивирует активированного"""
+    if request.user.is_superuser or request.user.has_perm('mailings.can_view_mailing'):
+        if request.method == "POST":
+            print('aaa')
+            user = User.objects.get(id=user_id)
+            if user.is_active:
+                user.is_active = False
+                user.save()
+                print('aaa')
+            else:
+                user.is_active = True
+                user.save()
+        return redirect('users:users')
+    raise PermissionDenied

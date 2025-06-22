@@ -16,5 +16,8 @@
         <a class="p-2 btn btn-outline-primary" href="{% url 'users:login' %}">Войти</a>
         <a class="p-2 btn btn-outline-primary" href="{% url 'users:registration' %}">Регистрация</a>
         {% endif %}
+        {% if perms.mailings.can_view_mailing %}
+        <a class="p-2 btn btn-outline-primary" href="{% url 'users:users' %}">Пользователи</a>
+        {% endif %}
     </nav>
 </div>

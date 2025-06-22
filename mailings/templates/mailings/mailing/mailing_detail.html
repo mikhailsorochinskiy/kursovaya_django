@@ -17,11 +17,17 @@
 </ul>
   <p><strong>Дата и время начала рассылки: </strong>{{mailing.date_start}}</p>
   <p><strong>Дата и время начала рассылки: </strong>{{mailing.date_end}}</p>
+  {% if user == mailing.owner %}
   <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
   <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+  {% if mailing.can_used %}
   <form method="post" action="{% url 'mailings:send_mailing' mailing.id %}">
     {% csrf_token %}
     <button type="submit" class="btn btn-primary">Отправить рассылку</button>
   </form>
+  {% else %}
+  <p>Запуск рассылки не возможен.</p>
+  {% endif %}
+  {% endif %}
 </div>
 {% endblock %}

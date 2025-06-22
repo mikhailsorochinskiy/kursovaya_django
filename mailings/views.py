@@ -6,6 +6,8 @@ from .models import MailingRecipient, Message, Mailing, TryMailing
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from config.settings import EMAIL_HOST_USER
 from .services import send_mailing, message_count
 from .forms import MailingRecipientForm, MessageForm, MailingForm
@@ -17,7 +19,13 @@ class ListMailingRecipient(LoginRequiredMixin, ListView):
     template_name = 'mailings/mailing_recipient/mailing_recipient_list.html'
     context_object_name = 'mailing_recipients'
 
+    @method_decorator(cache_page(60, key_prefix="mailings:mailing_recipients_list"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
+        if self.request.user.has_perm('mailings.can_view_mailing_recipient'):
+            return MailingRecipient.objects.all()
         return MailingRecipient.objects.filter(owner=self.request.user)
 
 
@@ -72,6 +80,10 @@ class ListMessage(LoginRequiredMixin, ListView):
     template_name = 'mailings/message/message_list.html'
     context_object_name = 'messages'
 
+    @method_decorator(cache_page(60, key_prefix="mailings:messages_list"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
 
 class CreateMessage(LoginRequiredMixin, CreateView):
     model = Message
@@ -124,7 +136,13 @@ class ListMailing(LoginRequiredMixin, ListView):
     template_name = 'mailings/mailing/mailing_list.html'
     context_object_name = 'mailings'
 
+    @method_decorator(cache_page(60, key_prefix="mailings:mailings_list"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
+        if self.request.user.has_perm('mailings.can_view_mailing'):
+            return Mailing.objects.all()
         return Mailing.objects.filter(owner=self.request.user)
 
 
@@ -178,6 +196,10 @@ class HomePage(ListView):
     template_name = 'mailings/home.html'
     context_object_name = 'mailing'
 
+    @method_decorator(cache_page(60, key_prefix="mailings:home"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def get_queryset(self):
         if self.request.user.is_authenticated:
             return Mailing.objects.filter(owner=self.request.user)
@@ -197,6 +219,10 @@ class ListTryMailing(LoginRequiredMixin, ListView):
     model = TryMailing
     template_name = 'mailings/try_mailing_list.html'
     context_object_name = 'try_mailings'
+
+    @method_decorator(cache_page(60, key_prefix="mailings:try_mailings"))
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
         return TryMailing.objects.filter(owner=self.request.user)
@@ -227,10 +253,25 @@ def send_mailing_view(request, mailing_id):
         try_mailing = TryMailing.objects.create(mailing=mailing)
         try_mailing.owner = request.user
         try:
-            send_mailing(mailing_id, try_mailing)
-            messages.success(request, f'Рассылка "{mailing.name}" успешно отправлена!')
-            return redirect('mailings:mailings_list')
+            if mailing.can_used:
+                send_mailing(mailing_id, try_mailing)
+                messages.success(request, f'Рассылка "{mailing.name}" успешно отправлена!')
+                return redirect('mailings:mailings_list')
         except Exception as e:
-            return HttpResponse(f'Раасылка не удалась по причине: {e}')
+            return HttpResponse(f'Расылка не удалась по причине: {e}')
 
     return redirect('mailings:mailing_detail', mailing_id=mailing_id)
+
+
+def block_mailing_view(request, mailing_id):
+    if request.user.has_perm('mailings.can_view_mailing'):
+        if request.method == "POST":
+            mailing = get_object_or_404(Mailing, id=mailing_id)
+            if mailing.can_used:
+                mailing.can_used = False
+                mailing.save()
+            else:
+                mailing.can_used = True
+                mailing.save()
+            return redirect('mailings:mailings_list')
+    raise PermissionDenied

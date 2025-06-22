@@ -4,10 +4,26 @@
 
 {% block content %}
 <div class="container mt-5">
+  {% if perms.mailings.can_view_mailing %}
+  <h1>Профиль</h1>
+  {% else %}
   <h1>Ваш профиль</h1>
+  {% endif %}
   <li class="list-group-item">{{ user.email }}</li>
   <li class="list-group-item">{{ user.phone_number }}</li>
   <li class="list-group-item">{{ user.country }}</li>
+  {% if user == request.user %}
   <a href="{% url 'users:user_update' user.pk %}" class="btn btn-secondary">Изменить профиль</a>
+  {% elif perms.mailings.can_view_mailing %}
+  <form method="post" action="{% url 'users:user_active' user.id %}">
+    {% csrf_token %}
+    {% if user.is_active %}
+    <button type="submit" class="btn btn-primary">Заблокировать</button>
+    {% else %}
+    <button type="submit" class="btn btn-primary">Разблокировать</button>
+    {% endif %}
+  </form>
+  {% endif %}
+
 </div>
 {% endblock %}

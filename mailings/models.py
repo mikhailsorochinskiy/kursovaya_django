@@ -15,6 +15,7 @@ class MailingRecipient(models.Model):
     class Meta:
         verbose_name = 'Получатель рассылки'
         verbose_name_plural = 'Получатели рассылок'
+        permissions = [('can_view_mailing_recipient', 'Can view mailing recipient list and detail'),]
 
 
 class Message(models.Model):
@@ -40,7 +41,7 @@ class Mailing(models.Model):
     date_start = models.DateTimeField(verbose_name="Дата и время первой отправки", blank=True, null=True, )
     date_end = models.DateTimeField(verbose_name="Дата и время окончания отправки", blank=True, null=True)
 
-
+    can_used = models.BooleanField(verbose_name='Возможна отправка', default=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='created')
     message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение', related_name='messages')
     recipients = models.ManyToManyField(MailingRecipient)
@@ -52,6 +53,7 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
+        permissions = [('can_view_mailing', 'Can view mailing list and detail'), ]
 
 
 class TryMailing(models.Model):
