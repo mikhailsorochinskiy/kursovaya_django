@@ -6,9 +6,13 @@
 {% include 'mailings/header_home.html'%}
 <div class="container mt-5">
   <h1>Рассылки</h1>
+  {% if user.is_authenticated %}
   <li class="list-group-item">Всего созданных рассылок: {{ mailing.count }}</li>
   <li class="list-group-item">Количество активных рассылок: {{ mailings_started_count }}</li>
   <li class="list-group-item">Всего уникальных получателей: {{ mailing_recipients_count }}</li>
   <a href="{% url 'mailings:statistic' %}" class="btn btn-secondary">Статистика по вашим рассылкам</a>
+  {% else %}
+  <p>Войдите или зарегистрируйтесь в нашем сервисе</p>
+  {% endif %}
 </div>
 {% endblock %}

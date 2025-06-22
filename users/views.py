@@ -6,6 +6,7 @@ from .forms import UserRegisterForm, LoginForm, PwdResetForm, UserPwdResetConfir
 from .models import User
 from django.urls import reverse_lazy, reverse
 from django.core.mail import send_mail
+from django.core.exceptions import PermissionDenied
 from django.contrib.auth import views as auth_views, update_session_auth_hash, login, authenticate
 from django.shortcuts import get_object_or_404, redirect, render, Http404
 
@@ -43,7 +44,11 @@ class UserDetailView(DetailView):
     template_name = 'users/user_detail.html'
     context_object_name = 'user'
 
-
+    def get_object(self, queryset=None):
+        user = get_object_or_404(User, pk=self.kwargs["pk"])
+        if user != self.request.user:
+            raise PermissionDenied("Вы не можете смотреть данные чужого пользователя.")
+        return user
 
 
 class UserUpdateView(UpdateView):
@@ -53,6 +58,14 @@ class UserUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse('users:user_detail', kwargs={'pk': self.object.pk})
+
+    def get_form_class(self):
+        user = get_object_or_404(User, pk=self.kwargs["pk"])
+        if user == self.request.user:
+            return UserUpdateForm
+        # if user.has_perm('catalog.can_unpublish_product') and user.has_perm('catalog.delete_product'):
+        #     return ProductModeratorForm
+        raise PermissionDenied
 
 
 class LoginView(FormView):

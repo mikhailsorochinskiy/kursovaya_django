@@ -8,13 +8,16 @@
     <a href="{% url 'mailings:message_create' %}" class="btn btn-primary">Новое сообщение</a>
 <ol class="list-group list-group-numbered">
   {% for message in messages%}
-    {% if user == message.owner %}
+
   <li class="list-group-item">
           <a href="{% url 'mailings:message_detail' message.pk %}">{{ message.message_topic }}</a>
+            {% if user == message.owner %}
           <a href="{% url 'mailings:message_update' message.pk %}" class="btn btn-secondary">Изменить</a>
           <a href="{% url 'mailings:message_delete' message.pk %}" class="btn btn-danger">Удалить</a>
+      {% endif %}
   </li>
-    {% endif %}
+  {% empty %}
+    <p>Нет сообщений</p>
   {% endfor%}
 </ol>
 </div>

@@ -4,9 +4,12 @@
 
 {% block content %}
 <div class="container mt-5">
-  <h1>"{{ message.message_topic}}"</h1>
-  <li class="list-group-item">{{ message.message_text }}</li>
+  <h1>Автор сообщения: {{message.owner}}</h1>
+  <p>Тема сообщения: "{{ message.message_topic}}"</p>
+  <li class="list-group-item">Сообщение: {{ message.message_text }}</li>
+  {% if user == message.owner %}
   <a href="{% url 'mailings:message_update' message.pk %}" class="btn btn-secondary">Изменить</a>
   <a href="{% url 'mailings:message_delete' message.pk %}" class="btn btn-danger">Удалить</a>
+  {% endif %}
 </div>
 {% endblock %}
