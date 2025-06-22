@@ -7,12 +7,10 @@
   <h1>Все попытки рассылки</h1>
 <ol class="list-group list-group-numbered">
   {% for try_mailing in try_mailings%}
-  {% if user == try_mailing.owner %}
   <li class="list-group-item">
           <p>{{ try_mailing.mailing.message.message_topic }}, {{ try_mailing.date}} - {{try_mailing.get_status_display}}</p>
 
   </li>
-  {% endif %}
   {% empty %}
   <p>У вас не было попыток запуска рассылок</p>
   {% endfor%}

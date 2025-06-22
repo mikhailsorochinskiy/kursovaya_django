@@ -1,14 +1,13 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
-from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView, TemplateView
+from django.views.generic import CreateView, ListView, DetailView, UpdateView, DeleteView
 from .models import MailingRecipient, Message, Mailing, TryMailing
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
-from config.settings import EMAIL_HOST_USER
 from .services import send_mailing, message_count
 from .forms import MailingRecipientForm, MessageForm, MailingForm
 
@@ -152,6 +151,11 @@ class CreateMailing(LoginRequiredMixin, CreateView):
     template_name = 'mailings/mailing/mailing_form.html'
     success_url = reverse_lazy('mailings:mailings_list')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user  # Передаем текущего пользователя в форму
+        return kwargs
+
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super().form_valid(form)
@@ -204,7 +208,6 @@ class HomePage(ListView):
         if self.request.user.is_authenticated:
             return Mailing.objects.filter(owner=self.request.user)
 
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated:
@@ -225,6 +228,8 @@ class ListTryMailing(LoginRequiredMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
+        if self.request.user.has_perm('mailings.can_view_mailing'):
+            return TryMailing.objects.all()
         return TryMailing.objects.filter(owner=self.request.user)
 
 

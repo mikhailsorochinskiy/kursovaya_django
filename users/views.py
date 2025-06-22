@@ -1,4 +1,3 @@
-from django.http import HttpResponse
 from django.db.models import Q
 from django.conf import settings
 from django.contrib import messages
@@ -8,9 +7,9 @@ from .models import User
 from django.urls import reverse_lazy, reverse
 from django.core.mail import send_mail
 from django.core.exceptions import PermissionDenied
-from django.contrib.auth import views as auth_views, update_session_auth_hash, login, authenticate
+from django.contrib.auth import login
 from django.contrib.auth.models import Permission
-from django.shortcuts import get_object_or_404, redirect, render, Http404
+from django.shortcuts import get_object_or_404, redirect, Http404
 
 
 # Create your views here.

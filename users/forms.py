@@ -25,6 +25,7 @@ class UserPwdResetConfirmForm(PasswordChangeForm):
         super().__init__(user, *args, **kwargs)
         # Удаляем поле старого пароля (оставляем только new_password1 и new_password2)
         del self.fields['old_password']
+
     class Meta:
         fields = ('new_password1', 'new_password2')
 
@@ -36,4 +37,5 @@ class LoginForm(AuthenticationForm):
 
 
 class PwdResetForm(forms.Form):
-    email = forms.EmailField(help_text='Введите почту, на которую будет отправлено письмо с подтверждением о смене пароля')
+    email = forms.EmailField(help_text='Введите почту, на которую будет отправлено письмо '
+                                       'с подтверждением о смене пароля')

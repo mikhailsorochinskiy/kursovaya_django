@@ -1,9 +1,8 @@
-from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
 from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from .models import Mailing, MailingRecipient, TryMailing
+from .models import Mailing
 from config.settings import EMAIL_HOST_USER
 
 

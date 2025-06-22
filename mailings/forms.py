@@ -5,7 +5,7 @@ from .models import MailingRecipient, Message, Mailing
 class MailingRecipientForm(forms.ModelForm):
     class Meta:
         model = MailingRecipient
-        fields = ['fio', 'email','comment',]
+        fields = ['fio', 'email', 'comment']
 
     def __init__(self, *args, **kwargs):
         super(MailingRecipientForm, self).__init__(*args, **kwargs)
@@ -44,21 +44,36 @@ class MessageForm(forms.ModelForm):
 class MailingForm(forms.ModelForm):
     class Meta:
         model = Mailing
-        fields = ['name', 'message', 'recipients',]
+        fields = ['name', 'message', 'recipients']
 
     def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
         super(MailingForm, self).__init__(*args, **kwargs)
+
+        # Настройка атрибутов полей
         self.fields['name'].widget.attrs.update({
             'class': 'form-control',
             'placeholder': 'Введите имя рассылки'
         })
-
         self.fields['message'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Выберите сообщение из предложенного списка'
+            'placeholder': 'Выберите сообщение'
         })
-
         self.fields['recipients'].widget.attrs.update({
             'class': 'form-control',
-            'placeholder': 'Выберите список получателей рассылки'
+            'placeholder': 'Выберите получателей'
         })
+
+        # Фильтрация получателей и сообщений
+        if self.user:
+            if self.user.is_superuser:
+                # Админ видит всех получателей
+                recipients_queryset = MailingRecipient.objects.all()
+                messages_queryset = Message.objects.all()
+            else:
+                # Обычный пользователь видит только своих
+                recipients_queryset = MailingRecipient.objects.filter(owner=self.user)
+                messages_queryset = Message.objects.filter(owner=self.user)
+
+            self.fields['recipients'].queryset = recipients_queryset
+            self.fields['message'].queryset = messages_queryset

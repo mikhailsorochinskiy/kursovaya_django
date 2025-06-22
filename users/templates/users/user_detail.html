@@ -9,9 +9,15 @@
   {% else %}
   <h1>Ваш профиль</h1>
   {% endif %}
-  <li class="list-group-item">{{ user.email }}</li>
-  <li class="list-group-item">{{ user.phone_number }}</li>
-  <li class="list-group-item">{{ user.country }}</li>
+  {% if object.avatar %}
+  <img src="{{ user.avatar.url }}" class="img-thumbnail mb-3" width="150">
+  {% endif %}
+  <ul class="list-group mb-3">
+    <li class="list-group-item">Email: {{ user.email }}</li>
+    <li class="list-group-item">Номер телефона: {{ user.phone_number|default:"Не указан" }}</li>
+    <li class="list-group-item">Страна: {{ user.country|default:"Не указана" }}</li>
+  </ul>
+
   {% if user == request.user %}
   <a href="{% url 'users:user_update' user.pk %}" class="btn btn-secondary">Изменить профиль</a>
   {% elif perms.mailings.can_view_mailing %}
@@ -24,6 +30,5 @@
     {% endif %}
   </form>
   {% endif %}
-
 </div>
 {% endblock %}
