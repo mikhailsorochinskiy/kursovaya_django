@@ -1,0 +1,15 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Статистика попыток рассылок{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Статистика по вашим рассылкам</h1>
+<ol class="list-group list-group-numbered">
+  <p>Всего попыток: {{try_mailings.count}}</p>
+  <p>Успешные: {{successful_try}}</p>
+  <p>Неуспешные:{{no_successful_try}}</p>
+  <p>Всего отправленных сообщений: {{messages_count}}</p>
+</ol>
+</div>
+{% endblock %}

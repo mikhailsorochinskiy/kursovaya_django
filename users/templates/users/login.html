@@ -1,0 +1,16 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Войти на сайт</h1>
+  <form method="post" enctype='multipart/form-data'>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Войти</button>
+    <a href="{% url 'mailings:home' %}" class="btn btn-danger">Отмена</a>
+    <a href="{% url 'users:pwd_reset' %}" class="btn btn-secondary">Забыли пароль?</a>
+  </form>
+</div>
+{% endblock %}

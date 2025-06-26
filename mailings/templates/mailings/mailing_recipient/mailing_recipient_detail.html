@@ -1,0 +1,15 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Получатель {{ mailing_recipient }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Получатель {{ mailing_recipient }}</h1>
+  <li class="list-group-item">ФИО: {{ mailing_recipient.fio }}</li>
+  <li class="list-group-item">Комментарий: {{ mailing_recipient.comment }}</li>
+  {% if user == mailing_recipient.owner %}
+  <a href="{% url 'mailings:mailing_recipient_update' mailing_recipient.pk %}" class="btn btn-secondary">Изменить</a>
+  <a href="{% url 'mailings:mailing_recipient_delete' mailing_recipient.pk %}" class="btn btn-danger">Удалить</a>
+  {% endif %}
+</div>
+{% endblock %}

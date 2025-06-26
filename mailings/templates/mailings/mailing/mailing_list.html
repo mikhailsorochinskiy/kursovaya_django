@@ -1,0 +1,37 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Рассылки{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Все рассылки</h1>
+    <a href="{% url 'mailings:mailing_create' %}" class="btn btn-primary">Создать рассылку</a>
+<ol class="list-group">
+  {% for mailing in mailings%}
+    {% if user == mailing.owner or perms.mailings.can_view_mailing %}
+    <li class="list-group-item list-group-numbered">
+          <a href="{% url 'mailings:mailing_detail' mailing.pk %}">{{ mailing.name }}</a>
+      Статус: {{ mailing.get_status_display}}
+        {% if user == mailing.owner %}
+          <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
+          <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+        {% endif %}
+        {% if perms.mailings.can_view_mailing %}
+        <form method="post" action="{% url 'mailings:block_mailing' mailing.id %}">
+        {% csrf_token %}
+        {% if mailing.can_used %}
+          Отключить возможность отправки рассылки?
+        {% else %}
+          Разрешить отправку рассылки?
+        {% endif %}
+        <button type="submit" class="btn btn-secondary">Да</button>
+        </form>
+        {% endif %}
+    </li>
+    {% endif %}
+  {% empty %}
+    <p>У вас нет рассылок.</p>
+  {% endfor%}
+</ol>
+</div>
+{% endblock %}

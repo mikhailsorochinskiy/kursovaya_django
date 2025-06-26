@@ -1,0 +1,33 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Рассылка{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Рассылка</h1>
+  <p><strong>Статус: </strong>{{ mailing.get_status_display }}</p>
+  <p><strong>Тема рассылки: </strong>{{ mailing.message }}</p>
+  <p><strong>Клиенты:</strong></p>
+  <ul>
+    {% for recipients in mailing.recipients.all %}
+        <li>{{ recipients.fio }} ({{ recipients.email }})</li>
+    {% empty %}
+        <li>Нет клиентов.</li>
+    {% endfor %}
+</ul>
+  <p><strong>Дата и время начала рассылки: </strong>{{mailing.date_start}}</p>
+  <p><strong>Дата и время начала рассылки: </strong>{{mailing.date_end}}</p>
+  {% if user == mailing.owner %}
+  <a href="{% url 'mailings:mailing_update' mailing.pk %}" class="btn btn-secondary">Изменить</a>
+  <a href="{% url 'mailings:mailing_delete' mailing.pk %}" class="btn btn-danger">Удалить</a>
+  {% if mailing.can_used %}
+  <form method="post" action="{% url 'mailings:send_mailing' mailing.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary">Отправить рассылку</button>
+  </form>
+  {% else %}
+  <p>Запуск рассылки не возможен.</p>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

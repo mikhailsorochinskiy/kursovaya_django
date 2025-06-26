@@ -1,0 +1,15 @@
+{% extends 'mailings/base.html' %}
+
+{% block title %}Смена пароля{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1>Смена пароля</h1>
+  <form method="post" enctype='multipart/form-data'>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Отправить</button>
+    <a href="{% url 'users:login' %}" class="btn btn-secondary">Отмена</a>
+  </form>
+</div>
+{% endblock %}
